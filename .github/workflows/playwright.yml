@@ -1,49 +1,69 @@
+# Nom du workflow affiché dans l'interface GitHub Actions
 name: Playwright Tests
+
+# Événements qui déclenchent le workflow
 on:
+  # Déclenché quand on pousse du code sur les branches main ou master
   push:
     branches: [main, master]
+  # Déclenché quand on crée une Pull Request vers main ou master
   pull_request:
     branches: [main, master]
 
+# Définition des jobs (tâches) à exécuter
 jobs:
+  # Job principal nommé "test"
   test:
+    # Limite de temps : le job s'arrête après 60 minutes si pas terminé
     timeout-minutes: 60
+
+    # Machine virtuelle utilisée (Ubuntu dernière version)
     runs-on: ubuntu-latest
 
+    # Liste des étapes à exécuter dans l'ordre
     steps:
+      # Étape 1 : Récupérer le code source du repo
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # Action officielle GitHub (v4 = dernière version)
 
+      # Étape 2 : Installer Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
-          cache: "npm"
+          node-version: 18 # Version Node.js (18 LTS recommandée)
+          cache: "npm" # Cache automatique des dépendances npm
 
+      # Étape 3 : Installer les dépendances
       - name: Install dependencies
-        run: npm ci
+        run: npm ci # npm ci = installation propre (plus rapide que npm install)
 
+      # Étape 4 : Installer les navigateurs Playwright
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
+        # --with-deps installe aussi les dépendances système nécessaires
 
+      # Étape 5 : Construire l'application Next.js pour la production
       - name: Build Next.js app
-        run: npm run build
+        run: npm run build # Nécessaire pour tester la version de production
 
+      # Étape 6 : Lancer les tests Playwright
       - name: Run Playwright tests
-        run: npm run test:e2e
+        run: npm run test:e2e # Script défini dans package.json
 
+      # Étape 7 : Sauvegarder le rapport HTML des tests (toujours)
       - name: Upload test results
         uses: actions/upload-artifact@v4
-        if: always()
+        if: always() # Exécute même si les tests échouent
         with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 30
+          name: playwright-report # Nom de l'artefact
+          path: playwright-report/ # Dossier contenant le rapport HTML
+          retention-days: 30 # Garde les fichiers 30 jours
 
+      # Étape 8 : Sauvegarder les détails des échecs (seulement en cas d'échec)
       - name: Upload test results (on failure)
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: failure() # Seulement si le job précédent a échoué
         with:
-          name: test-results
+          name: test-results # Screenshots, vidéos, traces des échecs
           path: test-results/
           retention-days: 30
