@@ -74,7 +74,7 @@ mkdir tests
 ## 📁 Structure du projet
 
 ```
-mon-projet-test/
+projet-test/
 ├── src/
 │   └── app/
 │       ├── globals.css
@@ -85,14 +85,20 @@ mon-projet-test/
 │       └── products/
 │           └── page.tsx          # Catalogue produits
 ├── tests/
-│   ├── homepage.spec.ts          # Tests navigation accueil
-│   ├── contact.spec.ts           # Tests formulaire contact
-│   ├── products.spec.ts          # Tests page produits
-│   └── e2e-flow.spec.ts          # Tests parcours complets
+│   ├── homepage.spec.ts          # Tests navigation accueil (6 tests)
+│   ├── contact.spec.ts           # Tests formulaire contact (9 tests)
+│   ├── products.spec.ts          # Tests page produits (6 tests)
+│   └── e2e-flow.spec.ts          # Tests parcours complets (3 tests)
+├── .github/
+│   └── workflows/
+│       └── playwright.yml        # Pipeline CI/CD GitHub Actions
 ├── playwright.config.ts          # Configuration Playwright
+├── Dockerfile                    # Containerisation pour tests
 ├── package.json
 └── README.md
 ```
+
+**📊 Couverture de tests : 24 tests sur 3 navigateurs (Chrome, Firefox, Safari)**
 
 ## 🏃‍♂️ Lancer l'application
 
@@ -213,39 +219,68 @@ await expect(page.getByTestId('loading')).not.toBeVisible();
 
 ## 🔄 CI/CD
 
-### Configuration pour GitHub Actions
+### ✅ Configuration GitHub Actions **IMPLÉMENTÉE**
 
-Créer `.github/workflows/playwright.yml` :
+Le pipeline CI/CD est maintenant **actif** et configuré dans `.github/workflows/playwright.yml` :
 
 ```yaml
 name: Playwright Tests
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
+
 jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
       with:
         node-version: 18
+        cache: "npm"
+        
     - name: Install dependencies
       run: npm ci
+      
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
+      
+    - name: Build Next.js app
+      run: npm run build
+      
     - name: Run Playwright tests
       run: npm run test:e2e
-    - uses: actions/upload-artifact@v3
+      
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
+        
+    - name: Upload test results (on failure)
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: test-results
+        path: test-results/
+        retention-days: 30
 ```
+
+**🚀 Pipeline actif avec :**
+- Tests automatiques sur push/PR
+- Build Next.js automatisé
+- Cache npm pour optimiser les builds
+- Rapports de test conservés 30 jours
+- Gestion des échecs avec artefacts de debug
 
 ### Configuration pour Docker
 
@@ -270,15 +305,19 @@ CMD ["npm", "run", "test:e2e"]
 - **E2E (End-to-End)** : Tests qui simulent le comportement utilisateur complet
 - **Sélecteurs** : Méthodes pour cibler les éléments (testid, rôle, texte)
 - **Assertions** : Vérifications des résultats attendus
+- **CI/CD** : Intégration et déploiement continus
+- **Pipeline** : Séquence automatisée de build, test et déploiement
 - **Page Object Model** : Pattern pour organiser les tests (non implémenté ici mais à connaître)
 
 ### Points forts de ce projet
 - ✅ Tests réalistes sur une app métier (assurance)
 - ✅ Couverture complète : navigation, formulaires, interactions
-- ✅ Configuration multi-navigateurs
-- ✅ Rapports visuels avec screenshots
+- ✅ Configuration multi-navigateurs (Chrome, Firefox, Safari)
+- ✅ Rapports visuels avec screenshots et traces
 - ✅ Intégration Next.js + TypeScript
-- ✅ Prêt pour CI/CD
+- ✅ **CI/CD GitHub Actions implémenté et actif**
+- ✅ **24 tests automatisés** sur 3 navigateurs
+- ✅ **Pipeline de build et test** automatisé
 
 ### Améliorations possibles
 - 🔄 Ajout de tests de performance
@@ -324,9 +363,22 @@ Ce projet est à des fins d'apprentissage. N'hésite pas à :
 - Quelle est ta stratégie pour les données de test ?
 - Comment testes-tu les éléments dynamiques ?
 - Comment organises-tu les tests dans un gros projet ?
+- **Comment as-tu configuré le CI/CD ?**
+- **Quels sont les avantages de l'automatisation des tests ?**
+- **Comment gères-tu les échecs de build en CI ?**
 
 ---
 
 💡 **Conseil** : Lance tous les tests, explore l'interface graphique, et assure-toi de comprendre chaque ligne de code avant ton entretien !
 
-🎯 **Objectif atteint** : Tu as maintenant une base solide pour parler d'automatisation de tests avec Playwright ! 🚀
+🎯 **Objectif atteint** : Tu as maintenant une base solide pour parler d'automatisation de tests avec Playwright ET de CI/CD ! 🚀
+
+## 🚀 **Statut du projet : PRODUCTION READY**
+
+- ✅ **Application Next.js** fonctionnelle
+- ✅ **24 tests E2E** automatisés sur 3 navigateurs
+- ✅ **Pipeline CI/CD** GitHub Actions actif
+- ✅ **Containerisation Docker** pour les tests
+- ✅ **Documentation complète** et à jour
+
+**🎉 Félicitations ! Votre projet est maintenant prêt pour la production avec un pipeline CI/CD professionnel !**
