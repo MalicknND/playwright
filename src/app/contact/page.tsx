@@ -20,7 +20,7 @@ export default function Contact() {
   return (
     <main className="container mx-auto p-8">
       <Link href="/" className="text-blue-600 mb-4 inline-block">
-        ← Retour à l'accueil
+        ← Retour à l&apos;accueil
       </Link>
 
       <h1 className="text-3xl font-bold mb-8" data-testid="contact-title">
