@@ -67,3 +67,20 @@ jobs:
           name: test-results # Screenshots, vidéos, traces des échecs
           path: test-results/
           retention-days: 30
+
+      # Étape 9 : Build et test avec Docker
+      - name: Build Docker image
+        run: docker build -t projet-test-e2e .
+
+      # Étape 10 : Test de l'image Docker
+      - name: Test Docker container
+        run: |
+          # Créer un conteneur temporaire et lancer les tests
+          docker run --rm projet-test-e2e
+
+      # Étape 11 : Nettoyer les images Docker
+      - name: Cleanup Docker images
+        if: always()
+        run: |
+          docker rmi projet-test-e2e || true
+          docker system prune -f
